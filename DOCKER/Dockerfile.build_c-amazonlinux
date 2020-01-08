@@ -7,7 +7,7 @@ RUN wget http://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm &
     rpm -ivh epel-release-latest-7.noarch.rpm
 
 RUN yum -y groupinstall "Development Tools"
-RUN yum -y install leveldb-devel which
+RUN yum -y install leveldb-devel which cmake3
 
 ENV GOVERSION=1.12.9
 
@@ -20,6 +20,14 @@ RUN cd /tmp && \
 ENV PATH=$PATH:/usr/local/go/bin:/go/bin
 ENV GOBIN=/go/bin
 ENV GOPATH=/go/src
+
+RUN yum -y install glibc-static
+
+RUN cd /tmp && git clone --recurse-submodules https://github.com/google/leveldb.git && \
+    cd leveldb && git checkout 1.22 && mkdir -p build && cd build && \
+    cmake3 -DCMAKE_BUILD_TYPE=Release .. && cmake3 --build .
+
+RUN cp /tmp/leveldb/build/libleveldb.a /usr/lib64/
 
 RUN mkdir -p /tendermint
 WORKDIR /tendermint
